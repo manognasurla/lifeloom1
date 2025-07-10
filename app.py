@@ -1,9 +1,13 @@
+
+
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+import datetime
 
 st.set_page_config(page_title="Lifeloom – AI Mental Wellness Companion", layout="wide")
 st.title("🌿 LifeLoom – AI Mental Wellness Companion")
+
 st.markdown("""
 Lifeloom is your 24/7 mental wellness companion that uses passive and active signals to **detect early signs of stress, anxiety, or depression**.
 
@@ -29,6 +33,7 @@ with st.form("lifeloom_form"):
         voice_logs = st.slider("🎤 Voice Logs/week", 0, 7, 1)
         social = st.slider("🧑‍🤝‍🧑 Social Interactions/day", 0, 20, 3)
 
+    text_journal = st.text_area("📝 Write Today’s Reflection (optional journal entry)", "")
     submit = st.form_submit_button("🔍 Analyze My Risk")
 
 # --- Risk Engine ---
@@ -82,9 +87,16 @@ if submit:
     ax.bar(labels, values, color='teal')
     st.pyplot(fig)
 
+    # --- Save Journal Entry (Local Session Log) ---
+    if text_journal.strip():
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open("journal_log.txt", "a") as f:
+            f.write(f"\n[{timestamp}] Risk Score: {risk_score} | Mood: {mood}\n{text_journal}\n")
+        st.success("📓 Your journal entry has been saved locally (journal_log.txt).")
+
     # --- AI Chat Placeholder ---
     st.subheader("🤖 24/7 AI Chat Companion")
-    st.markdown("Coming soon: Your AI listener that provides real-time support, active listening, and empathy.")
+    st.markdown("Coming soon: Talk freely to your AI wellness buddy for emotional support and active listening.")
 
     # --- School/Counselor Dashboard Placeholder ---
     st.subheader("🏫 Counselor Dashboard (Demo)")
@@ -94,4 +106,3 @@ if submit:
 # Footer
 st.markdown("---")
 st.caption("Developed with ❤️ by Team Binary Brains | ANITS | LifeLoom 2025")
-
