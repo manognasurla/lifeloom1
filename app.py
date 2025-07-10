@@ -74,7 +74,7 @@ if submitted:
 
     # --- Optional Visual Feedback ---
     st.subheader("📊 Your Wellness Inputs")
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(6, 3))
     metrics = [sleep_hours, screen_time, steps/1000, mood, social_contacts]
     labels = ["Sleep (hrs)", "Screen (hrs)", "Steps (k)", "Mood", "Social"]
     ax.bar(labels, metrics, color='skyblue')
