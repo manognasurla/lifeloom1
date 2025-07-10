@@ -1,95 +1,86 @@
 import streamlit as st
-import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.preprocessing import LabelEncoder
 
-# Load passive and active mental wellness dataset (simulated)
-df = pd.read_csv("1- mental-illnesses-prevalence.csv")
-df = df.rename(columns={
-    df.columns[3]: "Schizophrenia",
-    df.columns[4]: "Depression",
-    df.columns[5]: "Anxiety",
-    df.columns[6]: "Bipolar",
-    df.columns[7]: "Eating_Disorder"
-})
-df["Most_Prevalent_Disorder"] = df[["Schizophrenia", "Depression", "Anxiety", "Bipolar", "Eating_Disorder"]].idxmax(axis=1)
-df["Lifeloom_Risk_Score"] = df[["Schizophrenia", "Depression", "Anxiety", "Bipolar", "Eating_Disorder"]].sum(axis=1)
+st.set_page_config(page_title="Lifeloom – Personal Mental Wellness Risk Checker", layout="wide")
+st.title("🌿 LifeLoom – Personal Mental Wellness Risk Checker")
 
-# Encode countries
-le = LabelEncoder()
-df["Entity_Code"] = le.fit_transform(df["Entity"])
-
-# Train model to predict mental health risk score
-model = RandomForestRegressor(n_estimators=100, random_state=42)
-model.fit(df[["Entity_Code", "Year"]], df["Lifeloom_Risk_Score"])
-
-# Streamlit UI
-st.set_page_config(page_title="Lifeloom - AI-Powered Mental Wellness Platform", layout="wide")
-st.title("🌿 LifeLoom – AI-Powered Mental Wellness Platform")
 st.markdown("""
-LifeLoom analyzes passive data (like **sleep**, **steps**, **screen time**, **typing patterns**) and active inputs 
-like **mood check-ins**, **journals**, and **voice notes** to detect early signs of **stress**, **anxiety**, or **depression**.
+LifeLoom helps you reflect on your **passive and active wellness data** to detect early signs of **stress, anxiety, or depression**.
 
-It delivers:
-- 🎯 Personal Risk Score
-- 🙌 Tailored Interventions (Gratitude Nudges, CBT Tips)
-- 🤖 24/7 Empathetic AI Chatbot
-- 📊 Anonymized Dashboards for Schools & Organizations
-
-All while **safeguarding privacy**.
+Fill in the fields below to get a **personalized risk score**, receive **tailored CBT suggestions**, and start taking control of your mental well-being.
 """)
 
-# User Inputs (Simulated Country/Year Context)
-country = st.selectbox("Select Your Region", sorted(df["Entity"].unique()))
-year = st.slider("Select Year", int(df["Year"].min()), int(df["Year"].max()), 2020)
+# --- User Input Form ---
+st.subheader("🧍‍♀️ Your Personal Wellness Data")
+with st.form("wellness_form"):
+    col1, col2 = st.columns(2)
+    with col1:
+        sleep_hours = st.slider("Sleep (hours per night)", 0.0, 12.0, 6.0)
+        screen_time = st.slider("Screen Time (hours/day)", 0.0, 15.0, 5.0)
+        steps = st.number_input("Step Count (per day)", min_value=0, value=4000)
+        typing_speed = st.slider("Typing Speed (WPM)", 0, 100, 40)
+    with col2:
+        mood = st.slider("Mood (1 = Low, 10 = Great)", 1, 10, 5)
+        journaling_days = st.slider("Journaling Days per Week", 0, 7, 2)
+        voice_notes = st.slider("Voice Journals (per week)", 0, 7, 1)
+        social_contacts = st.slider("Social Interactions per Day", 0, 20, 3)
 
-encoded_country = le.transform([country])[0]
-input_df = pd.DataFrame([[encoded_country, year]], columns=["Entity_Code", "Year"])
-predicted_score = model.predict(input_df)[0]
+    submitted = st.form_submit_button("🔍 Analyze My Risk")
 
-st.metric("🧠 Your AI-Predicted Mental Wellness Risk Score", f"{predicted_score:.2f}")
+# --- Risk Engine ---
+if submitted:
+    st.subheader("📈 Your Mental Wellness Risk Analysis")
 
-row = df[(df["Entity"] == country) & (df["Year"] == year)]
-if not row.empty:
-    prevalent = row.iloc[0]["Most_Prevalent_Disorder"]
-    st.markdown(f"**Top Risk Indicator for {country} ({year}):** `{prevalent}`")
-else:
-    st.warning("No data available for the selected context.")
+    # Risk scoring (simple rule-based)
+    risk_score = 0
+    if sleep_hours < 6: risk_score += 1
+    if screen_time > 6: risk_score += 1
+    if steps < 3000: risk_score += 1
+    if mood <= 4: risk_score += 2
+    if journaling_days < 2: risk_score += 1
+    if voice_notes < 1: risk_score += 1
+    if typing_speed < 30: risk_score += 1
+    if social_contacts < 2: risk_score += 1
 
-# Visualization of Passive Data Trends (Simulated)
-st.subheader("📊 Simulated Trends in Passive Data (Sleep, Screen Time, Mood)")
-plot_df = df[df["Entity"] == country]
+    # Risk Level
+    if risk_score <= 2:
+        risk_level = "🟢 Low"
+        issue = "You're doing well! Maintain your current habits."
+    elif 3 <= risk_score <= 5:
+        risk_level = "🟡 Moderate"
+        issue = "Signs of possible stress or low mood. Consider self-care."
+    else:
+        risk_level = "🔴 High"
+        issue = "High mental stress risk. Consider reaching out or professional help."
 
-fig, ax = plt.subplots(figsize=(10, 5))
-for disorder in ["Schizophrenia", "Depression", "Anxiety", "Bipolar", "Eating_Disorder"]:
-    ax.plot(plot_df["Year"], plot_df[disorder], label=disorder)
-ax.set_title(f"Passive Indicator Trends in {country}")
-ax.set_xlabel("Year")
-ax.set_ylabel("% of Population Affected")
-ax.legend()
-st.pyplot(fig)
+    # Show result
+    st.metric("Your Risk Score", f"{risk_score} / 8")
+    st.markdown(f"**Risk Level:** {risk_level}")
+    st.markdown(f"**Interpretation:** {issue}")
 
-# Personalized CBT Suggestions
-st.subheader("💡 Personalized Well-being Suggestion")
-tips = {
-    "Depression": "📝 Practice gratitude journaling daily.",
-    "Anxiety": "🧘 Use 4-7-8 breathing for calming your nervous system.",
-    "Schizophrenia": "📅 Stick to routines and reduce digital overload.",
-    "Bipolar": "📈 Track mood with a daily log app.",
-    "Eating_Disorder": "🍽️ Try mindful meals and daily affirmations."
-}
-if not row.empty:
-    tip = tips.get(prevalent, "🧠 Maintain a healthy sleep, screen, and journaling routine.")
-    st.info(tip)
+    # --- CBT Suggestion ---
+    st.subheader("💡 Tailored CBT Suggestion")
+    if mood <= 4:
+        st.info("Try writing 3 good things that happened today. It boosts mood.")
+    elif sleep_hours < 6:
+        st.info("Avoid screens 1 hour before bed. Try a wind-down routine.")
+    elif screen_time > 6:
+        st.info("Consider scheduling no-screen blocks during the day.")
+    elif journaling_days < 2:
+        st.info("Journaling even once a week helps track feelings and gain insight.")
+    else:
+        st.info("Great job! Keep up your wellness habits.")
 
-# Empathetic AI Chatbot Placeholder
-st.subheader("🤖 Need to Talk? Meet Your 24/7 AI Companion")
-st.markdown("Chatbot feature coming soon. You'll be able to talk freely, and it will listen empathetically.")
+    # --- Optional Visual Feedback ---
+    st.subheader("📊 Your Wellness Inputs")
+    fig, ax = plt.subplots()
+    metrics = [sleep_hours, screen_time, steps/1000, mood, social_contacts]
+    labels = ["Sleep (hrs)", "Screen (hrs)", "Steps (k)", "Mood", "Social"]
+    ax.bar(labels, metrics, color='skyblue')
+    ax.set_ylabel("Value")
+    st.pyplot(fig)
 
-# Organizational Dashboard Placeholder
-st.subheader("🏫 Organization / School Dashboard (Anonymized Insights)")
-st.markdown("Schools and workplaces can use anonymized risk data to create timely interventions.")
-
+# Footer
 st.markdown("---")
-st.caption("Developed with ❤️ by Manogna | LifeLoom 2025 – AI for Mental Wellness")
+st.caption("Developed with ❤️ | LifeLoom 2025 – AI for Mental Wellness")
