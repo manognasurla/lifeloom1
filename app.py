@@ -2,85 +2,96 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Lifeloom – Personal Mental Wellness Risk Checker", layout="wide")
-st.title("🌿 LifeLoom – Personal Mental Wellness Risk Checker")
-
+st.set_page_config(page_title="Lifeloom – AI Mental Wellness Companion", layout="wide")
+st.title("🌿 LifeLoom – AI Mental Wellness Companion")
 st.markdown("""
-LifeLoom helps you reflect on your **passive and active wellness data** to detect early signs of **stress, anxiety, or depression**.
+Lifeloom is your 24/7 mental wellness companion that uses passive and active signals to **detect early signs of stress, anxiety, or depression**.
 
-Fill in the fields below to get a **personalized risk score**, receive **tailored CBT suggestions**, and start taking control of your mental well-being.
+It provides:
+- A **personalized risk score**
+- **Tailored support** based on your needs
+- An **empathetic AI chat assistant**
+- **Anonymous insights** for schools or counselors
 """)
 
-# --- User Input Form ---
-st.subheader("🧍‍♀️ Your Personal Wellness Data")
-with st.form("wellness_form"):
+# --- Form Input ---
+st.header("🧍 Personal Wellness Check-In")
+with st.form("lifeloom_form"):
     col1, col2 = st.columns(2)
     with col1:
-        sleep_hours = st.slider("Sleep (hours per night)", 0.0, 12.0, 6.0)
-        screen_time = st.slider("Screen Time (hours/day)", 0.0, 15.0, 5.0)
-        steps = st.number_input("Step Count (per day)", min_value=0, value=4000)
-        typing_speed = st.slider("Typing Speed (WPM)", 0, 100, 40)
+        sleep = st.slider("🛌 Sleep Hours (per night)", 0.0, 12.0, 6.0)
+        screen = st.slider("📱 Screen Time (hours/day)", 0.0, 15.0, 6.0)
+        steps = st.number_input("👣 Step Count (per day)", min_value=0, value=4000)
+        typing = st.slider("⌨️ Typing Speed (WPM)", 0, 100, 40)
     with col2:
-        mood = st.slider("Mood (1 = Low, 10 = Great)", 1, 10, 5)
-        journaling_days = st.slider("Journaling Days per Week", 0, 7, 2)
-        voice_notes = st.slider("Voice Journals (per week)", 0, 7, 1)
-        social_contacts = st.slider("Social Interactions per Day", 0, 20, 3)
+        mood = st.slider("🙂 Mood Today (1-10)", 1, 10, 6)
+        journaling = st.slider("📓 Journaling Days/week", 0, 7, 2)
+        voice_logs = st.slider("🎤 Voice Logs/week", 0, 7, 1)
+        social = st.slider("🧑‍🤝‍🧑 Social Interactions/day", 0, 20, 3)
 
-    submitted = st.form_submit_button("🔍 Analyze My Risk")
+    submit = st.form_submit_button("🔍 Analyze My Risk")
 
 # --- Risk Engine ---
-if submitted:
-    st.subheader("📈 Your Mental Wellness Risk Analysis")
+if submit:
+    st.header("📊 Your Lifeloom Risk Report")
 
-    # Risk scoring (simple rule-based)
+    # Rule-based Risk Score
     risk_score = 0
-    if sleep_hours < 6: risk_score += 1
-    if screen_time > 6: risk_score += 1
+    if sleep < 6: risk_score += 1
+    if screen > 6: risk_score += 1
     if steps < 3000: risk_score += 1
     if mood <= 4: risk_score += 2
-    if journaling_days < 2: risk_score += 1
-    if voice_notes < 1: risk_score += 1
-    if typing_speed < 30: risk_score += 1
-    if social_contacts < 2: risk_score += 1
+    if journaling < 2: risk_score += 1
+    if voice_logs < 1: risk_score += 1
+    if typing < 30: risk_score += 1
+    if social < 2: risk_score += 1
 
-    # Risk Level
+    # Risk Level + Tiered Support
     if risk_score <= 2:
-        risk_level = "🟢 Low"
-        issue = "You're doing well! Maintain your current habits."
+        risk_label = "🟢 Low Risk"
+        support = "✅ Try daily gratitude, journaling, and breathing routines."
     elif 3 <= risk_score <= 5:
-        risk_level = "🟡 Moderate"
-        issue = "Signs of possible stress or low mood. Consider self-care."
+        risk_label = "🟡 Moderate Risk"
+        support = "🧘 Start 5-min CBT, breathing games, mindfulness apps."
     else:
-        risk_level = "🔴 High"
-        issue = "High mental stress risk. Consider reaching out or professional help."
+        risk_label = "🔴 High Risk"
+        support = "📞 Please reach out to a friend, counselor, or professional help."
 
-    # Show result
     st.metric("Your Risk Score", f"{risk_score} / 8")
-    st.markdown(f"**Risk Level:** {risk_level}")
-    st.markdown(f"**Interpretation:** {issue}")
+    st.markdown(f"**Mental Wellness Risk Level:** {risk_label}")
+    st.success(f"🧠 Suggested Support: {support}")
 
-    # --- CBT Suggestion ---
-    st.subheader("💡 Tailored CBT Suggestion")
+    # --- Personalized CBT Tip ---
+    st.subheader("💡 Your Personalized Self-Care Tip")
     if mood <= 4:
-        st.info("Try writing 3 good things that happened today. It boosts mood.")
-    elif sleep_hours < 6:
-        st.info("Avoid screens 1 hour before bed. Try a wind-down routine.")
-    elif screen_time > 6:
-        st.info("Consider scheduling no-screen blocks during the day.")
-    elif journaling_days < 2:
-        st.info("Journaling even once a week helps track feelings and gain insight.")
+        st.info("Write 3 things you’re grateful for. It improves mood by 25%.")
+    elif screen > 8:
+        st.info("Take a screen detox break for 1 hour. Try nature or walking.")
+    elif sleep < 5:
+        st.info("Aim for 7-8 hours of sleep. Avoid screens before bed.")
+    elif social < 2:
+        st.info("Call or meet a friend today. Connection helps.")
     else:
-        st.info("Great job! Keep up your wellness habits.")
+        st.info("You're doing well. Stay consistent with self-care!")
 
-    # --- Optional Visual Feedback ---
-    st.subheader("📊 Your Wellness Inputs")
+    # --- Graph: Passive Metrics ---
+    st.subheader("📈 Your Passive Wellness Snapshot")
     fig, ax = plt.subplots(figsize=(6, 3))
-    metrics = [sleep_hours, screen_time, steps/1000, mood, social_contacts]
-    labels = ["Sleep (hrs)", "Screen (hrs)", "Steps (k)", "Mood", "Social"]
-    ax.bar(labels, metrics, color='skyblue')
-    ax.set_ylabel("Value")
+    labels = ["Sleep", "Screen", "Steps (k)", "Typing", "Mood"]
+    values = [sleep, screen, steps / 1000, typing, mood]
+    ax.bar(labels, values, color='teal')
     st.pyplot(fig)
+
+    # --- AI Chat Placeholder ---
+    st.subheader("🤖 24/7 AI Chat Companion")
+    st.markdown("Coming soon: Your AI listener that provides real-time support, active listening, and empathy.")
+
+    # --- School/Counselor Dashboard Placeholder ---
+    st.subheader("🏫 Counselor Dashboard (Demo)")
+    st.markdown("Anonymous trend data from students can help schools act early.")
+    st.image("https://i.imgur.com/NsS5JbJ.png", caption="Sample Dashboard (Anonymized)", use_column_width=True)
 
 # Footer
 st.markdown("---")
-st.caption("Developed with ❤️ | LifeLoom 2025 – AI for Mental Wellness")
+st.caption("Developed with ❤️ by Team Binary Brains | ANITS | LifeLoom 2025")
+
